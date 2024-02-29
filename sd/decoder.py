@@ -11,26 +11,26 @@ class VAE_AttentionBlock(nn.Module):
         self.attention = SelfAttention(1, channels)
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x: (B, Features, Height, Width)
+        # x: (B, Features, H, W)
 
-        residual = x
+        residue = x
         n, c, h, w = x.shape
 
-        # (BatchSize, Features, Height, Width) -> (BatchSize, Features, Height * Width)
+        # (B, F, H, W) -> (B, F, H * W)
         x = x.view(n, c, h * w)
 
-        # (BatchSize, Features, Height * Width) -> (BatchSize, Height * Width, Features)
+        # (B, F, H * W) -> (B, H * W, F)
         x = x.transpose(-1, -2)
 
         x = self.attention(x)
 
-        # (BatchSize, Height * Width, Features) -> (BatchSize, Features, Height * Width)
+        # (B, H * W, F) -> (B, F, H * W)
         x = x.transpose(-1, -2)
 
-        # (BatchSize, Features, Height * Width) -> (BatchSize, Features, Height, Width)
+        # (B, F, H * W) -> (B, F, H, W)
         x = x.view(n, c, h, w)
 
-        x += residual
+        x += residue
 
         return x
 
@@ -49,8 +49,8 @@ class VAE_ResidualBlock(nn.Module):
             self.residual_layer = nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # x: (B, In_Channels, Height, Width)
-        residual = x
+        # x: (B, In_Channels, H, W)
+        residue = x
 
         x = self.groupnorm_1(x)
         x = F.silu(x)
@@ -59,7 +59,7 @@ class VAE_ResidualBlock(nn.Module):
         x = F.silu(x)
         x = self.conv_2(x)
 
-        return x + self.residual_layer(residual)
+        return x + self.residual_layer(residue)
     
 # increase size of image and decrease number of channels
 
@@ -78,10 +78,10 @@ class VAE_Decoder(nn.Sequential):
             VAE_ResidualBlock(512, 512),
             VAE_ResidualBlock(512, 512),
             VAE_ResidualBlock(512, 512),
-            # (BatchSize, 512, H / 8, W / 8) -> (BatchSize, 512, H / 8, W / 8)
+            # (B, 512, H / 8, W / 8) -> (B, 512, H / 8, W / 8)
             VAE_ResidualBlock(512, 512),
             
-            # (BatchSize, 512, H / 8, W / 8) -> (BatchSize, 512, H / 4, W / 4)
+            # (B, 512, H / 8, W / 8) -> (B, 512, H / 4, W / 4)
             nn.Upsample(scale_factor=2),
 
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
@@ -90,7 +90,7 @@ class VAE_Decoder(nn.Sequential):
             VAE_ResidualBlock(512, 512),
             VAE_ResidualBlock(512, 512),
 
-            # (BatchSize, 512, H / 4, W / 4) -> (BatchSize, 512, H / 2, W / 42)
+            # (B, 512, H / 4, W / 4) -> (B, 512, H / 2, W / 42)
             nn.Upsample(scale_factor=2),
 
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
@@ -99,7 +99,7 @@ class VAE_Decoder(nn.Sequential):
             VAE_ResidualBlock(256, 256),
             VAE_ResidualBlock(256, 256),
             
-            # (BatchSize, 256, H / 2, W / 2) -> (BatchSize, 256, H, W)
+            # (B, 256, H / 2, W / 2) -> (B, 256, H, W)
             nn.Upsample(scale_factor=2),
 
             nn.Conv2d(256, 256, kernel_size=3, padding=1),
@@ -113,7 +113,7 @@ class VAE_Decoder(nn.Sequential):
             
             nn.SiLU(),
 
-            # (BatchSize, 128, H, W) -> (BatchSize, 3, H, W)
+            # (B, 128, H, W) -> (B, 3, H, W)
             nn.Conv2d(128, 3, kernel_size=3, padding=1),
         )
 
