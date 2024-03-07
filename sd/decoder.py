@@ -17,7 +17,7 @@ class VAE_AttentionBlock(nn.Module):
         n, c, h, w = x.shape
 
         # (B, F, H, W) -> (B, F, H * W)
-        x = x.view(n, c, h * w)
+        x = x.view((n, c, h * w))
 
         # (B, F, H * W) -> (B, H * W, F)
         x = x.transpose(-1, -2)
@@ -28,7 +28,7 @@ class VAE_AttentionBlock(nn.Module):
         x = x.transpose(-1, -2)
 
         # (B, F, H * W) -> (B, F, H, W)
-        x = x.view(n, c, h, w)
+        x = x.view((n, c, h, w))
 
         x += residue
 

@@ -27,9 +27,9 @@ def generate(prompt: str,
             raise ValueError("strength must be between 0 and 1")
 
         if idle_device:
-            to_idle: lambda x: x.to(idle_device)
+            to_idle = lambda x: x.to(idle_device)
         else:
-            to_idle: lambda x: x
+            to_idle = lambda x: x
 
         generator = torch.Generator(device=device)
         if seed is None:
@@ -66,7 +66,7 @@ def generate(prompt: str,
 
         if sampler_name == "ddpm":
             sampler = DDPMSampler(generator)
-            sampler.set_inference_steps(n_inference_step)
+            sampler.set_inference_timesteps(n_inference_step)
         else:
             raise ValueError(f"Unknown Sampler {sampler_name}")
         
@@ -150,7 +150,7 @@ def rescale(x, old_range, new_range, clamp=False):
         x = x.clamp(new_min, new_max)
     return x
 
-def get_time_embeddomg(timestep):
+def get_time_embedding(timestep):
     # (160,)
     freqs = torch.pow(10000, -torch.arange(start=0, end=160, dtype=torch.float32) / 160)
     # (1, 160)

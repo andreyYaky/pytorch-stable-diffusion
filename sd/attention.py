@@ -19,12 +19,12 @@ class SelfAttention(nn.Module):
         # x; (B, Seq_Len, Dim)
 
         input_shape = x.shape
-        B, sequence_length, d_embed = input_shape
+        batch_size, sequence_length, d_embed = input_shape
 
-        interim_shape = (B, sequence_length, self.n_heads, self.d_head)
+        interim_shape = (batch_size, sequence_length, self.n_heads, self.d_head)
 
         # (B, Seq_Len, Dim) -> (B, Seq_Len, Dim * 3) -> 3 tensors of shape (B, Seq_Len, Dim)
-        q, k, v = self.in_proj(x).chunk(3, dim = 1)
+        q, k, v = self.in_proj(x).chunk(3, dim = -1)
 
         # (B, Seq_Len, Dim) -> (B, Seq_Len, H, Dim / H)
         # each head will watch whole sequence but only a part of each pixel/token
@@ -95,7 +95,7 @@ class CrossAttention(nn.Module):
 
         output = weight @ v
 
-        output = output.transpose(1, 2).continuous()
+        output = output.transpose(1, 2).contiguous()
         output = output.view(input_shape)
         output = self.out_proj(output)
 

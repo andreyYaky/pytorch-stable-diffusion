@@ -14,6 +14,7 @@ def preload_models_from_standard_weights(ckpt_path, device):
     decoder = VAE_Decoder().to(device)
     decoder.load_state_dict(state_dict["decoder"], strict=True)
 
+    # size mismatch in unet.decoders.10.1.* here
     diffusion = Diffusion().to(device)
     diffusion.load_state_dict(state_dict["diffusion"], strict=True)
 
