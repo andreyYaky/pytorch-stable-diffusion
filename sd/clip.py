@@ -33,24 +33,24 @@ class CLIPLayer(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # (B, Seq_Len, Dim)
 
-        residual = x
+        residue = x
 
         # self-attention
         x = self.layernorm_1(x)
 
         x = self.attention(x, causal_mask=True)
 
-        x += residual
+        x += residue
 
         # feedforward
 
-        residual = x
+        residue = x
 
         x = self.layernorm_2(x)
         x = self.linear_1(x)
-        x - x * torch.sigmoid(1.702 * x) # quickGELU activation function
+        x = x * torch.sigmoid(1.702 * x) # quickGELU activation function
         x = self.linear_2(x)
-        x += residual
+        x += residue
 
         return x
 
