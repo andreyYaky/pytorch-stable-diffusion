@@ -58,7 +58,7 @@ class UNET_ResidualBlock(nn.Module):
     
 class UNET_AttentionBlock(nn.Module):
 
-    def __init__(self, n_head: int, n_embd: int, d_centext=768):
+    def __init__(self, n_head: int, n_embd: int, d_context=768):
         super().__init__()
         channels = n_head * n_embd
 
@@ -68,7 +68,7 @@ class UNET_AttentionBlock(nn.Module):
         self.layernorm_1 = nn.LayerNorm(channels)
         self.attention_1 = SelfAttention(n_head, channels, in_proj_bias=False)
         self.layernorm_2 = nn.LayerNorm(channels)
-        self.attention_2 = CrossAttention(n_head, channels, d_centext, in_proj_bias=False)
+        self.attention_2 = CrossAttention(n_head, channels, d_context, in_proj_bias=False)
         self.layernorm_3 = nn.LayerNorm(channels)
         self.linear_geglu_1 = nn.Linear(channels, 4 * channels * 2)
         self.linear_geglu_2 = nn.Linear(4 * channels, channels)
